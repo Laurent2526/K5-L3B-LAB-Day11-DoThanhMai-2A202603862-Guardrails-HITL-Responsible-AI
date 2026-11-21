@@ -1,5 +1,28 @@
 # Day 11 — Controlled Agent Security (2026)
 
+**Học viên** Do Thanh Mai · **MSSV** 2A202603862 · **Lớp** K5-L3B
+
+## Chạy phần Blue
+
+Từ thư mục gốc, trong môi trường Python ảo đã kích hoạt:
+
+```powershell
+python -m pip install -r requirements.txt
+python src/main.py --part 2
+python -m pytest tests/smoke tests/public -q
+```
+
+Đặt `OPENROUTER_API_KEY` trong `.env` ở gốc repo, sau đó chạy:
+
+```powershell
+python src/main.py --part 3
+python -m pytest tests/public/test_results_contract.py -q
+```
+
+Checkpoint 3 ghi kết quả, audit và metrics vào `outputs/`. Audit và metrics chạy bên ngoài các plugin. Audit che PII và secret trước khi ghi file. Nhóm rate limit đếm số yêu cầu đi qua riêng lớp giới hạn, còn kiểm tra egress chỉ đánh giá chính sách, không gửi dữ liệu tới đích.
+
+Khi đã có đủ `outputs/results.json` và `outputs/attack_results.json`, chạy `python scripts/grade.py --submission-dir . --out outputs/grade_report.json` để tạo báo cáo chấm.
+
 > 👤 **Hình thức:** bài tập **cá nhân** (1 người / 1 MSSV).  
 > 🎯 **Mục tiêu:** đóng vai **Blue Team** để học cách xây Guardrails phòng thủ, rồi đóng vai **Red Team** để tấn công agent **Red** hoặc **Red Advance**.  
 > ✅ Làm theo **Checkpoint 1 → 5** trong [`CHECKPOINTS.md`](CHECKPOINTS.md) · nộp theo [`SUBMISSION.md`](SUBMISSION.md).
@@ -75,8 +98,7 @@ Bonus lab chỉ tính **một** trong hai: leak **Red** (B1, tối đa +5) hoặ
 
 Codelab lớp: xem `template-codelabs/codelab-day11-k4-l3a.md` (L3A) hoặc bản L3B tương ứng.
 
-**Repo nộp học viên:** `K4-<L3A hoặc L3B>-DAY11-<HoVaTen>-<MSSV>-Guardrails-HITL-Responsible-AI`  
-Ví dụ: `K4-L3A-DAY11-NguyenVanA-2A2026xxxxx-Guardrails-HITL-Responsible-AI`
+**Repo nộp theo SUBMISSION.md** `K5-L3B-DAY11-DoThanhMai-2A202603862-Guardrails-HITL-Responsible-AI`
 
 ---
 

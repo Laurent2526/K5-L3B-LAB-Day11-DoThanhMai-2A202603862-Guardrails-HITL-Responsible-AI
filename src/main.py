@@ -24,7 +24,7 @@ _SRC_DIR = Path(__file__).resolve().parent
 if str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
-from core.config import setup_api_key
+from core.config import get_openrouter_api_key, setup_api_key
 
 
 async def part2_guardrails():
@@ -53,6 +53,10 @@ async def part2_guardrails():
 
 async def part3_assignment_suite():
     """Checkpoint 3: defense suite → outputs/results.json."""
+    key = get_openrouter_api_key()
+    if not key or key.endswith("..."):
+        raise SystemExit("Checkpoint 3 cần OPENROUTER_API_KEY trong file .env ở gốc repo.")
+
     print("\n" + "=" * 60)
     print("CHECKPOINT 3: Assignment suite → outputs/*.json")
     print("=" * 60)
@@ -62,23 +66,21 @@ async def part3_assignment_suite():
         build_observability,
         run_assignment_suite,
     )
+    from openai import APIStatusError, OpenAIError
 
+    plugins = build_production_plugins(use_llm_judge=False)
+    audit, monitor = build_observability()
+    pipeline = {"plugins": plugins, "audit": audit, "monitor": monitor}
     try:
-        plugins = build_production_plugins(use_llm_judge=False)
-        audit, monitor = build_observability()
-        pipeline = {"plugins": plugins, "audit": audit, "monitor": monitor}
         result = await run_assignment_suite(pipeline)
-        print("Suite finished.")
-        print("Wrote outputs under repo outputs/")
-        return result
-    except NotImplementedError as e:
-        print(
-            "Chưa xong Checkpoint 3 (src/assignment/pipeline.py). "
-            "Hoàn thành rồi chạy lại từ gốc repo:\n"
-            "  python src/main.py --part 3"
-        )
-        print(f"Detail: {e}")
-        return None
+    except APIStatusError as exc:
+        raise SystemExit(
+            f"Checkpoint 3 chưa hoàn thành: OpenRouter trả về HTTP {exc.status_code}."
+        ) from None
+    except OpenAIError:
+        raise SystemExit("Checkpoint 3 chưa hoàn thành: không gọi được OpenRouter.") from None
+    print("Wrote results.json, audit_log.json and metrics.json under repo outputs/")
+    return result
 
 
 async def part4_attacks():
@@ -134,8 +136,6 @@ async def part4_attacks():
 
 
 async def main(parts=None):
-    setup_api_key()
-
     if parts is None:
         parts = [2, 3, 4]  # Core: CP2 → CP3 → CP4
 
@@ -145,12 +145,13 @@ async def main(parts=None):
         elif part == 3:
             await part3_assignment_suite()
         elif part == 4:
+            setup_api_key()
             await part4_attacks()
         else:
             print(f"Unknown part: {part}. Dùng --part 2, 3, hoặc 4.")
 
     print("\n" + "=" * 60)
-    print("Lab 11 complete! Check your results above.")
+    print(f"Completed checkpoints: {', '.join(str(part) for part in parts)}")
     print("=" * 60)
 
 
